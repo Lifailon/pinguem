@@ -1,6 +1,6 @@
 ## ping.vue
 
-Web interface for checking the availability of selected addresses or subnets.
+Simple web interface for checking the availability of one address or subnet.
 
 Install dependencies:
 
@@ -13,3 +13,5 @@ Start backend and frontend:
 ```shell
 npm start
 ```
+
+![](/image/example.jpg)
