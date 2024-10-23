@@ -58,7 +58,8 @@ export default {
             if (addresses.length > 0) {
                 try {
                     // Отправляем массив адресов к backend
-                    const response = await axios.post('http://localhost:3000/ping', { addresses })
+                    const serverHost = `${window.location.protocol}//${window.location.hostname}:3000`
+                    const response = await axios.post(`${serverHost}/ping`, { addresses })
                     // console.log('Ping results:', response.data)
                     this.results = response.data
                 }
@@ -71,7 +72,8 @@ export default {
         async resetPingCounts() {
             const addresses = this.inputs.map(input => input.address).filter(address => address)
             if (addresses.length > 0) {
-                await axios.post('http://localhost:3000/reset', { addresses })
+                const serverHost = `${window.location.protocol}//${window.location.hostname}:3000`
+                await axios.post(`${serverHost}/reset`, { addresses })
                 this.results.forEach(result => {
                     result.successful = 0
                     result.failed = 0
