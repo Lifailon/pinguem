@@ -1,7 +1,7 @@
 const express       = require('express')
 const ping          = require('ping')
 const bodyParser    = require('body-parser')
-const { Date } = require('core-js')
+const { Date }      = require('core-js')
 
 const app = express()
 
@@ -22,11 +22,20 @@ const pingResults = {}
 // Основная функция
 async function pingHost(host) {
     try {
-        const result = await ping.promise.probe(host)
+        const result = await ping.promise.probe(
+            host,
+            {
+                timeout: 1
+            }
+        )
+        // Получаем текущую дату
         const currentTime = new Date().toISOString()
         // Если хранимые результаты существуют, обновляем их
         if (pingResults[host]) {
-            pingResults[host].time = result.time // Обновляем время ответа
+            // Обновляем время ответа
+            pingResults[host].time = result.time ? result.time : 'N/A'
+            // Проверяем и обновляем статус
+            pingResults[host].status = result.alive ? 'Available' : 'Unavailable'
             // Если результат успешный, фиксируем текущее время, или возвращаем последнюю дату, когда был доступ
             pingResults[host].lastAvailable = result.alive ? currentTime : pingResults[host].lastAvailable
             pingResults[host].lastUnavailable = !result.alive ? currentTime : pingResults[host].lastUnavailable
@@ -42,7 +51,7 @@ async function pingHost(host) {
             pingResults[host] = {
                 host: host,
                 time: result.time,
-                status: result.alive ? 'Alive' : 'Unreachable',
+                status: result.alive ? 'Available' : 'Unavailable',
                 lastAvailable: result.alive ? currentTime : null,
                 lastUnavailable: result.alive ? null : currentTime,
                 successful: result.alive ? 1 : 0,
@@ -54,10 +63,10 @@ async function pingHost(host) {
     catch (error) {
         return {
             host: host,
-            time: null,
+            time: 'n/a',
             status: 'Error',
-            lastAvailable: null,
-            lastUnavailable: new Date().toISOString(),
+            lastAvailable: 'n/a',
+            lastUnavailable: currentTime,
             successful: 0,
             failed: 1,
         }
@@ -75,13 +84,16 @@ app.post('/ping', async (req, res) => {
     for (const address of addresses) {
         // Проверка на подсеть
         if (address.endsWith('.0')) {
-            const subnet = address.split('.').slice(0, 3).join('.')
-            for (let i = 1; i <= 254; i++) {
-                const host = `${subnet}.${i}`
-                promises.push(pingHost(host))
+            let subnet = address.split('.').slice(0, 3)
+            if (subnet.length === 3) {
+                subnet = subnet.join('.')
+                for (let i = 1; i <= 254; i++) {
+                    const host = `${subnet}.${i}`
+                    promises.push(pingHost(host))
+                }
             }
         }
-        // Если это один IP-адрес
+        // Один IP-адрес
         else {
             promises.push(pingHost(address))
         }
@@ -100,8 +112,18 @@ app.post('/reset', (req, res) => {
     for (const address of addresses) {
         if (pingResults[address]) {
             delete pingResults[address]
-            // pingResults[address].successful = 0
-            // pingResults[address].failed = 0
+        }
+        else if (address.endsWith('.0')) {
+            let subnet = address.split('.').slice(0, 3)
+            if (subnet.length === 3) {
+                subnet = subnet.join('.')
+                for (let i = 1; i <= 254; i++) {
+                    const host = `${subnet}.${i}`
+                    if (pingResults[host]) {
+                        delete pingResults[host]
+                    }
+                }
+            }
         }
     }
     res.json({ message: 'Ping results have been reset.' })
