@@ -172,8 +172,29 @@ export default {
 }
 </script>
 
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const isDark = ref(localStorage.getItem('theme') === 'dark')
+
+const toggleTheme = () => {
+  isDark.value = !isDark.value
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+  document.documentElement.classList.toggle('dark', isDark.value)
+}
+
+// Применяем тему при загрузке страницы
+onMounted(() => {
+  document.documentElement.classList.toggle('dark', isDark.value)
+})
+</script>
+
 <template>
     <div class="ping-container">
+        <button class="theme-toggle" @click="toggleTheme">
+            {{ isDark ? '🌙' : '☀️' }}
+        </button>
+
         <div v-for="(input, index) in inputs" :key="index" class="input-group">
             <input v-model="input.address" placeholder="Enter address" />
             <button @click="removeInput(index)">-</button>
@@ -219,7 +240,31 @@ export default {
     </div>
 </template>
 
-<style scoped>
+<style>
+.theme-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+  background: transparent !important;
+  border: none;
+  outline: none;
+}
+
+.dark table,
+.dark {
+  background-color: #2f2f2f;
+  color: #e3e3e3;
+}
+
+/* Теманая тема для полей ввода и выпадающего списка*/
+.dark input,
+.dark select {
+    background-color: #4a4a4a;
+    color: #ffffff;
+}
+
 .ping-container {
     width: 80%;
     margin: 0 auto;
