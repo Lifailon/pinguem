@@ -1,4 +1,4 @@
-## ping.vue
+## pinguem
 
 Web interface for checking the availability of selected addresses or subnet.
 
@@ -19,12 +19,12 @@ cd ping.vue
 npm install
 ```
 
-- Start backend (port `3000`) and frontend:
+- Start backend (port `3005`) and frontend (port `8085`):
 
 ```shell
 npm start
 ```
 
-- Go to: `http://localhost:8080`
+- Go to: `http://localhost:8085`
 
 ![example](/image/example.jpg)

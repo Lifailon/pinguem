@@ -130,6 +130,6 @@ app.post('/reset', (req, res) => {
 })
 
 // Запуск сервера
-app.listen(3000, () => {
-    console.log('The server is running on http://localhost:3000')
+app.listen(3005, () => {
+    console.log('The server is running on http://localhost:3005')
 })
