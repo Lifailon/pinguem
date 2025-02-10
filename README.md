@@ -1,4 +1,11 @@
-# Pinguem
+<h2 align="center">
+    Pinguem
+</h2>
+
+<p align="center">
+        <a href="https://www.npmjs.com/package/pinguem"><img title="npm version"src="https://img.shields.io/npm/v/pinguem?logo=npm&logoColor=red"></a>
+        <a href="https://hub.docker.com/r/lifailon/pinguem"><img title="docker image size"src="https://img.shields.io/docker/image-size/lifailon/pinguem?&color=blue&logo=Docker&label=Docker+Image"></a>
+</p>
 
 Web interface on based [Vue](https://github.com/vuejs/core) for async checking of the availability of the selected host or subnet using the [node-ping](https://github.com/danielzzz/node-ping) library.
 
@@ -6,16 +13,21 @@ All indicated hosts are preserved on the side of the client (in the browser) aft
 
 ## Install
 
-Clone the repository:
+### Docker
+
+Download the image from [Docker Hub](https://hub.docker.com/r/lifailon/pinguem) and run the container:
+
+```shell
+docker run -d --name pinguem -p 8085:8085 -p 3005:3005 --restart=unless-stopped lifailon/pinguem:latest
+```
+
+### Build
+
+Clone the repository and install the dependencies:
 
 ```shell
 git clone https://github.com/Lifailon/pinguem
 cd pinguem
-```
-
-Install the dependencies:
-
-```shell
 npm install
 ```
 
@@ -25,22 +37,13 @@ Start backend (port `3005`) and frontend (port `8085`):
 npm start
 ```
 
-### Docker
-
-Build the image from [dockerfile](dockerfile) and run the container:
-
-```shell
-docker build -t pinguem .
-docker run -d --name pinguem -p 8085:8085 -p 3005:3005 --restart=unless-stopped pinguem
-```
-
 Go to: `http://localhost:8085`
 
 ![example](/image/example.jpg)
 
 You can get checking results at the current time using `GET` request via `API`:
 
-`curl -sS http://192.168.3.100:3005/result | jq .`
+`curl -sS http://localhost:3005/result | jq .`
 
 ```json
 {

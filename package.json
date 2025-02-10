@@ -1,7 +1,6 @@
 {
   "name": "pinguem",
   "version": "0.2.0",
-  "private": true,
   "scripts": {
     "backend": "tsc && node dist/backend.js",
     "frontend": "vue-cli-service serve --port 8085",
