@@ -138,6 +138,11 @@ app.post('/reset', (req: Request, res: Response) => {
     res.json({ message: 'Ping results have been reset.' })
 })
 
+// Конечная точка для получения результатов пинга
+app.get('/result', (req: Request, res: Response) => {
+    res.json(pingResults)
+})
+
 // Запуск сервера
 app.listen(3005, () => {
     console.log('The server is running on http://localhost:3005')
