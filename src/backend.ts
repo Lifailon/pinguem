@@ -1,7 +1,6 @@
-const express       = require('express')
-const ping          = require('ping')
-const bodyParser    = require('body-parser')
-const { Date }      = require('core-js')
+import express, { Request, Response } from 'express'
+import ping from 'ping'
+import bodyParser from 'body-parser'
 
 const app = express()
 
@@ -17,23 +16,31 @@ app.use((req, res, next) => {
 })
 
 // Хранилище для статистики пингов
-const pingResults = {}
+const pingResults: { [key: string]: PingResult } = {}
+
+// Тип для результатов пинга
+interface PingResult {
+    host: string
+    time: string | number | null
+    status: 'Available' | 'Unavailable' | 'Error'
+    lastAvailable: string | null
+    lastUnavailable: string | null
+    successful: number
+    failed: number
+}
 
 // Основная функция
-async function pingHost(host) {
+async function pingHost(host: string): Promise<PingResult> {
+    const currentTime = new Date().toISOString()
     try {
-        const result = await ping.promise.probe(
-            host,
-            {
-                timeout: 1
-            }
-        )
-        // Получаем текущую дату
-        const currentTime = new Date().toISOString()
+        const result = await ping.promise.probe(host, {
+            timeout: 1
+        })
+
         // Если хранимые результаты существуют, обновляем их
         if (pingResults[host]) {
             // Обновляем время ответа
-            pingResults[host].time = result.time ? result.time : 'N/A'
+            pingResults[host].time = result.time ?? 'N/A'
             // Проверяем и обновляем статус
             pingResults[host].status = result.alive ? 'Available' : 'Unavailable'
             // Если результат успешный, фиксируем текущее время, или возвращаем последнюю дату, когда был доступ
@@ -74,21 +81,23 @@ async function pingHost(host) {
 }
 
 // Пинг одного адреса или всей подсети
-app.post('/ping', async (req, res) => {
-    const { addresses } = req.body
-    const promises = []
-    // Проверяем. что полученные данные в теле запроса не пустые или являются массивом
+app.post('/ping', async (req: Request, res: Response) => {
+    const { addresses }: { addresses: string[] } = req.body
+    const promises: Promise<PingResult>[] = []
+
+    // Проверяем, что полученные данные в теле запроса не пустые или являются массивом
     if (!addresses || addresses.length === 0 || !Array.isArray(addresses)) {
         return res.status(400).json({ error: 'Address is required.' })
     }
+
     for (const address of addresses) {
         // Проверка на подсеть
         if (address.endsWith('.0')) {
-            let subnet = address.split('.').slice(0, 3)
+            let subnet = address.split('.').slice(0, 3) 
             if (subnet.length === 3) {
-                subnet = subnet.join('.')
+                const subnetStr = subnet.join('.')
                 for (let i = 1; i <= 254; i++) {
-                    const host = `${subnet}.${i}`
+                    const host = `${subnetStr}.${i}`
                     promises.push(pingHost(host))
                 }
             }
@@ -104,8 +113,8 @@ app.post('/ping', async (req, res) => {
 })
 
 // Конечная точка для очистки данных счетчиков
-app.post('/reset', (req, res) => {
-    const { addresses } = req.body
+app.post('/reset', (req: Request, res: Response) => {
+    const { addresses }: { addresses: string[] } = req.body
     if (!addresses || !Array.isArray(addresses)) {
         return res.status(400).json({ error: 'Addresses are required.' })
     }
@@ -116,9 +125,9 @@ app.post('/reset', (req, res) => {
         else if (address.endsWith('.0')) {
             let subnet = address.split('.').slice(0, 3)
             if (subnet.length === 3) {
-                subnet = subnet.join('.')
+                const subnetStr = subnet.join('.')
                 for (let i = 1; i <= 254; i++) {
-                    const host = `${subnet}.${i}`
+                    const host = `${subnetStr}.${i}`
                     if (pingResults[host]) {
                         delete pingResults[host]
                     }
@@ -130,6 +139,6 @@ app.post('/reset', (req, res) => {
 })
 
 // Запуск сервера
-app.listen(3000, () => {
-    console.log('The server is running on http://localhost:3000')
+app.listen(3005, () => {
+    console.log('The server is running on http://localhost:3005')
 })
