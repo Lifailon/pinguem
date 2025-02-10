@@ -7,15 +7,19 @@
         <a href="https://hub.docker.com/r/lifailon/pinguem"><img title="docker image size"src="https://img.shields.io/docker/image-size/lifailon/pinguem?&color=blue&logo=Docker&label=Docker+Image"></a>
 </p>
 
-Web interface on based [Vue](https://github.com/vuejs/core) for async checking of the availability of the selected host or subnet using the [node-ping](https://github.com/danielzzz/node-ping) library.
+Web interface based on [Vue](https://github.com/vuejs/core) for async checking of the availability of the selected hosts or subnet using the [node-ping](https://github.com/danielzzz/node-ping) library.
 
-All indicated hosts are preserved on the side of the client (in the browser) after rebooting the server and the system. For a survey of the entire subnet, the optimal speed in my system is 4 seconds (so that the queries did not ahead of the scanning rate), for this, use 0 in the 4 octet (for example, `192.168.3.0`). To check hosts every second without delay, it is optimal to use up to 50 hosts.
+All fields for entering addresses are dynamic, and are stored on the side of the client (in the browser) after rebooting the server and the user system. For a survey of the entire subnet, use 0 in the 4 octet (example, `192.168.3.0`), it is possible to simultaneously indicate a few subnet. It is recommended to launch in the Docker container, you can check 254, 508 and more hosts every second without delay. 
 
 ## Install
 
 ### Docker
 
 Download the image from [Docker Hub](https://hub.docker.com/r/lifailon/pinguem) and run the container:
+
+<!--
+docker build -t lifailon/pinguem .
+-->
 
 ```shell
 docker run -d --name pinguem -p 8085:8085 -p 3005:3005 --restart=unless-stopped lifailon/pinguem:latest
@@ -39,7 +43,11 @@ npm start
 
 Go to: `http://localhost:8085`
 
-![example](/image/example.jpg)
+![example](/image/light.jpg)
+
+Dark mode:
+
+![example](/image/dark.jpg)
 
 You can get checking results at the current time using `GET` request via `API`:
 
@@ -51,46 +59,46 @@ You can get checking results at the current time using `GET` request via `API`:
     "host": "192.168.3.101",
     "time": 1,
     "status": "Available",
-    "lastAvailable": "2025-02-10T10:27:11.038Z",
+    "lastAvailable": "2025-02-10T21:33:35.530Z",
     "lastUnavailable": null,
-    "successful": 203,
-    "failed": 0
-  },
-  "8.8.8.8": {
-    "host": "8.8.8.8",
-    "time": 33,
-    "status": "Available",
-    "lastAvailable": "2025-02-10T10:27:11.032Z",
-    "lastUnavailable": null,
-    "successful": 203,
+    "successful": 100,
     "failed": 0
   },
   "google.com": {
     "host": "google.com",
-    "time": 40,
+    "time": 22,
     "status": "Available",
-    "lastAvailable": "2025-02-10T10:27:11.029Z",
-    "lastUnavailable": "2025-02-10T10:26:16.552Z",
-    "successful": 201,
-    "failed": 2
+    "lastAvailable": "2025-02-10T21:33:35.524Z",
+    "lastUnavailable": "2025-02-10T21:32:19.236Z",
+    "successful": 90,
+    "failed": 10
+  },
+  "8.8.8.8": {
+    "host": "8.8.8.8",
+    "time": 21,
+    "status": "Available",
+    "lastAvailable": "2025-02-10T21:33:35.527Z",
+    "lastUnavailable": null,
+    "successful": 100,
+    "failed": 0
   },
   "github.com": {
     "host": "github.com",
-    "time": 68,
+    "time": 47,
     "status": "Available",
-    "lastAvailable": "2025-02-10T10:27:11.027Z",
-    "lastUnavailable": "2025-02-10T10:26:37.819Z",
-    "successful": 200,
+    "lastAvailable": "2025-02-10T21:33:35.521Z",
+    "lastUnavailable": "2025-02-10T21:33:32.535Z",
+    "successful": 97,
     "failed": 3
   },
-  "192.168.3.99": {
-    "host": "192.168.3.99",
+  "192.168.3.102": {
+    "host": "192.168.3.102",
     "time": "unknown",
     "status": "Unavailable",
     "lastAvailable": null,
-    "lastUnavailable": "2025-02-10T10:27:11.035Z",
+    "lastUnavailable": "2025-02-10T21:33:35.534Z",
     "successful": 0,
-    "failed": 203
+    "failed": 100
   }
 }
 ```

@@ -1,6 +1,13 @@
 {
   "name": "pinguem",
-  "version": "0.2.0",
+  "version": "0.3.0",
+  "description": "Web interface based on Vue for async checking of the availability of the selected hosts or subnet using the node-ping library.",
+  "keywords": [
+    "monitoring",
+    "ping",
+    "vue",
+    "typescript"
+  ],
   "scripts": {
     "backend": "tsc && node dist/backend.js",
     "frontend": "vue-cli-service serve --port 8085",
