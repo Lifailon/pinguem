@@ -1,16 +1,21 @@
-## Pinguem
+# Pinguem
 
-Web interface for `icmp` checking the availability of selected host or subnet.
+Web interface on based [Vue](https://github.com/vuejs/core) for async checking of the availability of the selected host or subnet using the [node-ping](https://github.com/danielzzz/node-ping) library.
 
-All indicated hosts are preserved on the side of the client (in the browser) after rebooting the server and the system. For a survey of the entire subnet, the optimal speed in my system is 4 seconds (so that the queries did not ahead of the scanning rate), for this, use 0 in the fourth octet (for example, `192.168.3.0`). To check hosts every second without delay, it is optimal to use up to 50 hosts.
+All indicated hosts are preserved on the side of the client (in the browser) after rebooting the server and the system. For a survey of the entire subnet, the optimal speed in my system is 4 seconds (so that the queries did not ahead of the scanning rate), for this, use 0 in the 4 octet (for example, `192.168.3.0`). To check hosts every second without delay, it is optimal to use up to 50 hosts.
 
-### Install
+## Install
 
-Clone the repository and install the dependencies:
+Clone the repository:
 
 ```shell
-git clone https://github.com/Lifailon/ping.vue
-cd ping.vue
+git clone https://github.com/Lifailon/pinguem
+cd pinguem
+```
+
+Install the dependencies:
+
+```shell
 npm install
 ```
 
@@ -20,6 +25,69 @@ Start backend (port `3005`) and frontend (port `8085`):
 npm start
 ```
 
+### Docker
+
+Build the image from [dockerfile](dockerfile) and run the container:
+
+```shell
+docker build -t pinguem .
+docker run -d --name pinguem -p 8085:8085 -p 3005:3005 --restart=unless-stopped pinguem
+```
+
 Go to: `http://localhost:8085`
 
 ![example](/image/example.jpg)
+
+You can get checking results at the current time using `GET` request via `API`:
+
+`curl -sS http://192.168.3.100:3005/result | jq .`
+
+```json
+{
+  "192.168.3.101": {
+    "host": "192.168.3.101",
+    "time": 1,
+    "status": "Available",
+    "lastAvailable": "2025-02-10T10:27:11.038Z",
+    "lastUnavailable": null,
+    "successful": 203,
+    "failed": 0
+  },
+  "8.8.8.8": {
+    "host": "8.8.8.8",
+    "time": 33,
+    "status": "Available",
+    "lastAvailable": "2025-02-10T10:27:11.032Z",
+    "lastUnavailable": null,
+    "successful": 203,
+    "failed": 0
+  },
+  "google.com": {
+    "host": "google.com",
+    "time": 40,
+    "status": "Available",
+    "lastAvailable": "2025-02-10T10:27:11.029Z",
+    "lastUnavailable": "2025-02-10T10:26:16.552Z",
+    "successful": 201,
+    "failed": 2
+  },
+  "github.com": {
+    "host": "github.com",
+    "time": 68,
+    "status": "Available",
+    "lastAvailable": "2025-02-10T10:27:11.027Z",
+    "lastUnavailable": "2025-02-10T10:26:37.819Z",
+    "successful": 200,
+    "failed": 3
+  },
+  "192.168.3.99": {
+    "host": "192.168.3.99",
+    "time": "unknown",
+    "status": "Unavailable",
+    "lastAvailable": null,
+    "lastUnavailable": "2025-02-10T10:27:11.035Z",
+    "successful": 0,
+    "failed": 203
+  }
+}
+```

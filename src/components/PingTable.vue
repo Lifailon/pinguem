@@ -155,7 +155,7 @@ export default {
 <style scoped>
     .ping-container {
         width: 80%;
-        margin: 0 auto
+        margin: 0 auto;
     }
 
     .input-group {
@@ -165,7 +165,7 @@ export default {
     input {
         padding: 10px;
         margin-right: 10px;
-        width: 300px
+        width: 300px;
     }
 
     button {
@@ -174,7 +174,7 @@ export default {
         color: white;
         border: none;
         cursor: pointer;
-        margin-right: 10px
+        margin-right: 10px;
     }
 
     button:hover {
@@ -183,26 +183,26 @@ export default {
 
     select {
         padding: 10px;
-        margin-right: 10px
+        margin-right: 10px;
     }
 
     table {
         width: 100%;
         margin-top: 20px;
-        border-collapse: collapse
+        border-collapse: collapse;
     }
 
     th, td {
         padding: 10px;
         border: 1px solid #dddddd;
-        text-align: left
+        text-align: left;
     }
 
     .available {
-        color: #41b883
+        color: #41b883;
     }
 
     .unavailable {
-        color: red
+        color: red;
     }
 </style>

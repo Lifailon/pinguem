@@ -1,6 +1,6 @@
 {
-  "name": "ping.vue",
-  "version": "0.1.0",
+  "name": "pinguem",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "backend": "tsc && node dist/backend.js",
@@ -23,11 +23,5 @@
     "@vue/cli-service": "~5.0.0",
     "concurrently": "^9.0.1",
     "typescript": "^5.7.3"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ]
+  }
 }
