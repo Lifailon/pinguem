@@ -1,8 +1,12 @@
 import express, { Request, Response } from 'express'
 import ping from 'ping'
 import bodyParser from 'body-parser'
+import morgan from 'morgan'
 
 const app = express()
+
+// Логируем запросы
+app.use(morgan('combined'))
 
 // Middleware для JSON
 app.use(bodyParser.json())
@@ -29,14 +33,13 @@ interface PingResult {
     failed: number
 }
 
-// Основная функция
+// Основная функция для выполнения ping и сохранения результатов
 async function pingHost(host: string): Promise<PingResult> {
     const currentTime = new Date().toISOString()
     try {
         const result = await ping.promise.probe(host, {
             timeout: 1
         })
-
         // Если хранимые результаты существуют, обновляем их
         if (pingResults[host]) {
             // Обновляем время ответа
@@ -80,16 +83,14 @@ async function pingHost(host: string): Promise<PingResult> {
     }
 }
 
-// Пинг одного адреса или всей подсети
+// Конечная точка для пинга одного адреса или всей подсети
 app.post('/ping', async (req: Request, res: Response) => {
     const { addresses }: { addresses: string[] } = req.body
     const promises: Promise<PingResult>[] = []
-
     // Проверяем, что полученные данные в теле запроса не пустые или являются массивом
     if (!addresses || addresses.length === 0 || !Array.isArray(addresses)) {
         return res.status(400).json({ error: 'Address is required.' })
     }
-
     for (const address of addresses) {
         // Проверка на подсеть
         if (address.endsWith('.0')) {
@@ -143,7 +144,58 @@ app.get('/result', (req: Request, res: Response) => {
     res.json(pingResults)
 })
 
+// Конечная точка для метрик Prometheus с параметром подсети (/metrics/192.168.3.0)
+app.get('/metrics/:subnet', async (req: Request, res: Response) => {
+    // Извлекаем подсеть из пути
+    const subnet = req.params.subnet
+    // Проверка валидность параметра из пути
+    if (!subnet || !subnet.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+        return res.status(400).json({ error: 'Invalid subnet format.' })
+    }
+    // Переменные для хранения метрик
+    let active = 0
+    let inactive = 0
+    // Массивы для хранения доступных и недоступных хостов
+    const activeHosts: string[] = []
+    const inactiveHosts: string[] = []
+    // Извлекаем первые 3 октета
+    const subnetParts = subnet.split('.').slice(0, 3).join('.')
+    // Пингуем подсеть
+    const promises: Promise<any>[] = []
+    for (let i = 1; i <= 254; i++) {
+        const host = `${subnetParts}.${i}`
+        promises.push(
+            ping.promise.probe(host, {
+                timeout: 1
+            }).then((result) => {
+                if (result.alive) {
+                    active++
+                    activeHosts.push(host)
+                } else {
+                    inactive++
+                    inactiveHosts.push(host)
+                }
+            })
+        )
+    }
+    // Ожидаем завершения всех пингов
+    await Promise.all(promises)
+    // Формируем ответ
+    res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
+    res.end(`# HELP active_hosts_count Number of active hosts in the subnet
+# TYPE active_hosts_count gauge
+active_hosts_count{subnet="${subnet}"} ${active}
+# HELP inactive_hosts_count Number of inactive hosts in the subnet
+# TYPE inactive_hosts_count gauge
+inactive_hosts_count{subnet="${subnet}"} ${inactive}
+# HELP status_hosts_list List of active and inactive hosts
+# TYPE status_hosts_list gauge
+${activeHosts.map(host => `status_hosts_list{host="${host}",subnet="${subnet}"} 1`).join('\n')}
+${inactiveHosts.map(host => `status_hosts_list{host="${host}",subnet="${subnet}"} 0`).join('\n')}
+`)
+})
+
 // Запуск сервера
-app.listen(3005, () => {
-    console.log('The server is running on http://localhost:3005')
+app.listen(3005, '0.0.0.0', () => {
+    console.log('The server is running on 3005 port')
 })
