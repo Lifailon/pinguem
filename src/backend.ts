@@ -154,26 +154,26 @@ app.get('/metrics/:subnet', async (req: Request, res: Response) => {
     }
     // Переменные для хранения метрик
     let active = 0
-    let inactive = 0
-    // Массивы для хранения доступных и недоступных хостов
-    const activeHosts: string[] = []
-    const inactiveHosts: string[] = []
+    let inactive = 254
     // Извлекаем первые 3 октета
     const subnetParts = subnet.split('.').slice(0, 3).join('.')
-    // Пингуем подсеть
-    const promises: Promise<any>[] = []
+    // Объект для хранения статусов всех хостов (по умолчанию 0)
+    const hostsStatus: Record<string, number> = {}
+    // По умолчанию все хосты недоступны
     for (let i = 1; i <= 254; i++) {
         const host = `${subnetParts}.${i}`
+        hostsStatus[host] = 0
+    }
+    // Пингуем подсеть
+    const promises: Promise<any>[] = []
+    for (const host in hostsStatus) {
         promises.push(
-            ping.promise.probe(host, {
-                timeout: 1
-            }).then((result) => {
+            ping.promise.probe(host, { timeout: 1 }).then((result) => {
+                // Если хост активен, меняем его статус на 1 и обновляем статусы
                 if (result.alive) {
+                    hostsStatus[host] = 1
                     active++
-                    activeHosts.push(host)
-                } else {
-                    inactive++
-                    inactiveHosts.push(host)
+                    inactive--
                 }
             })
         )
@@ -190,8 +190,9 @@ active_hosts_count{subnet="${subnet}"} ${active}
 inactive_hosts_count{subnet="${subnet}"} ${inactive}
 # HELP status_hosts_list List of active and inactive hosts
 # TYPE status_hosts_list gauge
-${activeHosts.map(host => `status_hosts_list{host="${host}",subnet="${subnet}"} 1`).join('\n')}
-${inactiveHosts.map(host => `status_hosts_list{host="${host}",subnet="${subnet}"} 0`).join('\n')}
+${Object.entries(hostsStatus)
+    .map(([host, status]) => `status_hosts_list{host="${host}",subnet="${subnet}"} ${status}`)
+    .join('\n')}
 `)
 })
 

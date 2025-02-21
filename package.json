@@ -16,11 +16,13 @@
   "dependencies": {
     "axios": "^1.7.7",
     "express": "^4.21.1",
+    "morgan": "^1.10.0",
     "ping": "^0.4.4",
     "vue": "^3.2.13"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.1",
     "@types/ping": "^0.4.4",
     "@vue/cli-service": "~5.0.0",
