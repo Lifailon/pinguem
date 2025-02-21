@@ -7,9 +7,9 @@
         <a href="https://hub.docker.com/r/lifailon/pinguem"><img title="docker image size"src="https://img.shields.io/docker/image-size/lifailon/pinguem?&color=blue&logo=Docker&label=Docker+Image"></a>
 </p>
 
-Web interface based on [Vue](https://github.com/vuejs/core) for async checking of the availability of the selected hosts or subnet using the [node-ping](https://github.com/danielzzz/node-ping) library.
+Web interface based on [Vue](https://github.com/vuejs/core) and the [Prometheus](https://github.com/prometheus/prometheus) exporter for async checking of the availability of the selected hosts or subnet using the [node-ping](https://github.com/danielzzz/node-ping) library.
 
-All fields for entering addresses are dynamic, and are stored on the side of the client (in the browser) after rebooting the server and the user system. For a survey of the entire subnet, use 0 in the 4 octet (example, `192.168.3.0`), it is possible to simultaneously indicate a few subnet. It is recommended to launch in the Docker container, you can check 254, 508 and more hosts every second without delay. 
+All fields for entering addresses are dynamic, and are stored on the side of the client (in the browser) after rebooting the server and the user system. For a survey of the entire subnet, use 0 in the 4 octet (example, `192.168.3.0`), it is possible to simultaneously indicate a few subnet. It is recommended to launch in the Docker container, you can check `254`, `508` and more hosts every second without delay. The ping stops at the time of closing the browser tab, while the results is stored on the server in memory until they are discharged through the interface or API.
 
 ## Install
 
@@ -102,3 +102,29 @@ You can get checking results at the current time using `GET` request via `API`:
   }
 }
 ```
+
+## Ping Exporter
+
+- Metrics for prometheus:
+
+```shell
+curl -sS http://localhost:3005/metrics/<subnet>
+```
+
+- Specify the target subnet to monitor in the `prometheus.yml` configuration:
+
+```yaml
+scrape_configs:
+  - job_name: ping-exporter
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    metrics_path: /metrics/192.168.3.0
+    static_configs:
+      - targets:
+        - '192.168.3.100:3005'
+```
+- Import a ready [Dashboard](grafana-ping-exporter.json) for Grafana:
+
+![grafana](/image/grafana.jpg)
+
+Displays the number of active and inactive hosts in the subnet, all host addresses that change their status over the selected period of time, and graphs of the stability of active hosts.
